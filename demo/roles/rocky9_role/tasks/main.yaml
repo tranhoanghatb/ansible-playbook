@@ -1,0 +1,4 @@
+---
+- name: Task specific to Rocky Linux 9
+  debug:
+    msg: "This is a Rocky Linux 9 host."

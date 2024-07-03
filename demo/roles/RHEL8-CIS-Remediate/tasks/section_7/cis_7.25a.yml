@@ -1,0 +1,51 @@
+- name: Set DefaultZone for firewalld hardening
+  set_fact:
+    zone_value: !!str drop
+  tags:
+    - always
+
+- name: Set DefaultZone for firewalld
+  block:
+
+  - name: Check for duplicate values
+    lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      create: true
+      regexp: "^DefaultZone*"
+      state: absent
+    check_mode: true
+    changed_when: false
+    register: dupes
+
+
+  - name: Deduplicate DefaultZone values from /etc/firewalld/firewalld.conf
+    lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      create: true
+      regexp: "^DefaultZone*"
+      state: absent
+    when: dupes.found is defined and dupes.found > 1
+
+
+  - name: Insert correct DefaultZone line to /etc/firewalld/firewalld.conf
+    lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      create: true
+      regexp: (?i)^\s*DefaultZone\s+
+      line: DefaultZone={{ zone_value }}
+      state: present
+      insertbefore: BOF 
+    when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+
+  - name: Allow SSH service through firewalld
+    firewalld:
+        port: 22/tcp
+        zone: "{{ zone_value }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+  - name: Reload firewalld to apply changes
+    ansible.builtin.service:
+      name: firewalld
+      state: reloaded

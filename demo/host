@@ -1,0 +1,12 @@
+all:
+  hosts:
+    rocky8:
+      ansible_host: rocky-8-demo
+      ansible_user: rocky
+      ansible_become: yes
+      ansible_distribution: Rocky8
+    rocky9:
+      ansible_host: rocky-9-demo
+      ansible_user: rocky
+      ansible_become: yes
+      ansible_distribution: Rocky9

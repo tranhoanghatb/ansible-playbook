@@ -1,0 +1,10 @@
+# templates/MY_CUSTOM_POLICY.pmod.j2
+
+include = DEFAULT
+
+# Define TLS ciphers
+tls_cipher = 'aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,aes192-cbc,aes256-cbc'
+
+# Define SSH MACs
+ssh_mac =  'hmac-sha2-512,hmac-sha2-256,hmac-sha1'
+
