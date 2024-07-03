@@ -3,4 +3,4 @@
 - name: "SECTION | 7 | PCI-DSS"
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
-        - "cis_7*yml"
+        - "cis_7.44.yml"
