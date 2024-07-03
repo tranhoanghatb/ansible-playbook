@@ -1,7 +1,0 @@
----
-
-- name: Apply RHEL9 CIS hardening
-  hosts: all
-  become: true
-  roles:
-      - role: "{{ playbook_dir }}"
