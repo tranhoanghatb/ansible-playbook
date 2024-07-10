@@ -504,6 +504,7 @@
 
       - name: Lock Accounts After Failed Password Attempts - Create an authselect
           custom profile based on the current profile
+        ignore_errors: yes
         ansible.builtin.command:
           cmd: authselect create-profile hardening -b {{ authselect_current_profile }}
         when:
