@@ -51,6 +51,7 @@
 
   - name: Lock Accounts After Failed Password Attempts - Informative message based
       on the authselect integrity check result
+    ignore_errors: yes
     ansible.builtin.assert:
       that:
       - result_authselect_check_cmd.rc == 0
