@@ -57,6 +57,8 @@
       loop: "{{ deb_files.files }}"
       when: distro_info.ansible_facts.ansible_distribution == "Debian"
       notify: Update apt cache
+      ignore_errors: yes
+      no_log: true
 
     - name: Install rpm files (CentOS)
       yum:
@@ -65,6 +67,8 @@
       loop: "{{ rpm_files.files }}"
       when: distro_info.ansible_facts.ansible_distribution == "CentOS"
       notify: Update yum cache
+      ignore_errors: yes
+      no_log: true
 
     # - name: Ensure scap-security-guide is installed
     #   ansible.builtin.package:
