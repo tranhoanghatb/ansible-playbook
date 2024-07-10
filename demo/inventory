@@ -1,11 +1,11 @@
 [rocky8]
-rocky-8-demo ansible_user=rocky
+#rocky-8-demo ansible_user=rocky
 
 [rocky9]
-rocky-9-demo ansible_user=rocky
+#rocky-9-demo ansible_user=rocky
 
 [debian12]
-debian-12-demo ansible_user=debian
+172.11.1.126 ansible_user=administrator
 
 [ubuntu22]
 #ubuntu22 ansible_user=ubuntu
