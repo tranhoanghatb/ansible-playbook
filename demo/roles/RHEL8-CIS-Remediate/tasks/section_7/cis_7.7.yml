@@ -76,6 +76,8 @@
 
   - name: Lock Accounts After Failed Password Attempts - Ensure "with-faillock" feature
       is enabled using authselect tool
+
+    ignore_errors: yes
     ansible.builtin.command:
       cmd: authselect enable-feature with-faillock
     register: result_authselect_enable_feature_cmd
