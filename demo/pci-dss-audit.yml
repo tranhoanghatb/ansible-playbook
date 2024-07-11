@@ -7,78 +7,78 @@
 
   tasks:
 
-    - name: Get distribution information
-      ansible.builtin.setup:
-        filter: ansible_distribution
-      register: distro_info
+    # - name: Get distribution information
+    #   ansible.builtin.setup:
+    #     filter: ansible_distribution
+    #   register: distro_info
 
-    - name: Copy tar.gz file to remote server debian
-      copy:
-        src: files/debian/pci-dss.tar.gz
-        dest: /tmp/
-      when: distro_info.ansible_facts.ansible_distribution == "Debian"
+    # - name: Copy tar.gz file to remote server debian
+    #   copy:
+    #     src: files/debian/pci-dss.tar.gz
+    #     dest: /tmp/
+    #   when: distro_info.ansible_facts.ansible_distribution == "Debian"
 
-    - name: Copy tar.gz file to remote server CentOS
-      copy:
-        src: files/centos/pci-dss.tar.gz
-        dest: /tmp/
-      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+    # - name: Copy tar.gz file to remote server CentOS
+    #   copy:
+    #     src: files/centos/pci-dss.tar.gz
+    #     dest: /tmp/
+    #   when: distro_info.ansible_facts.ansible_distribution == "CentOS"
 
-    - name: Extract tar.gz file on remote server
-      unarchive:
-        src: /tmp/pci-dss.tar.gz
-        dest: /tmp/
-        remote_src: yes
+    # - name: Extract tar.gz file on remote server
+    #   unarchive:
+    #     src: /tmp/pci-dss.tar.gz
+    #     dest: /tmp/
+    #     remote_src: yes
 
-    - name: Clean up tar.gz file on remote server
-      file:
-        path: /tmp/pci-dss.tar.gz
-        state: absent
+    # - name: Clean up tar.gz file on remote server
+    #   file:
+    #     path: /tmp/pci-dss.tar.gz
+    #     state: absent
 
-    - name: Find all deb files in the specified folder (Debian)
-      find:
-        paths: /tmp/pci-dss
-        patterns: "*.deb"
-      when: distro_info.ansible_facts.ansible_distribution == "Debian"
-      register: deb_files
+    # - name: Find all deb files in the specified folder (Debian)
+    #   find:
+    #     paths: /tmp/pci-dss
+    #     patterns: "*.deb"
+    #   when: distro_info.ansible_facts.ansible_distribution == "Debian"
+    #   register: deb_files
 
-    - name: Find all rpm files in the specified folder (CentOS)
-      find:
-        paths: /tmp/pci-dss
-        patterns: "*.rpm"
-      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
-      register: rpm_files
+    # - name: Find all rpm files in the specified folder (CentOS)
+    #   find:
+    #     paths: /tmp/pci-dss
+    #     patterns: "*.rpm"
+    #   when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+    #   register: rpm_files
 
-    - name: Install deb files (Debian)
-      apt:
-        deb: "{{ item.path }}"
-        state: present
-        dpkg_options: "force-confdef,force-confold"
-      loop: "{{ deb_files.files }}"
-      when: distro_info.ansible_facts.ansible_distribution == "Debian"
-      notify: Update apt cache
-      ignore_errors: yes
-      no_log: true
-
-    - name: Install rpm files (CentOS)
-      yum:
-        name: "{{ item.path }}"
-        state: present
-      loop: "{{ rpm_files.files }}"
-      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
-      notify: Update yum cache
-      ignore_errors: yes
-      no_log: true
-
-    # - name: Ensure scap-security-guide is installed
-    #   ansible.builtin.package:
-    #     name: scap-security-guide
+    # - name: Install deb files (Debian)
+    #   apt:
+    #     deb: "{{ item.path }}"
     #     state: present
+    #     dpkg_options: "force-confdef,force-confold"
+    #   loop: "{{ deb_files.files }}"
+    #   when: distro_info.ansible_facts.ansible_distribution == "Debian"
+    #   notify: Update apt cache
+    #   ignore_errors: yes
+    #   no_log: true
 
-    # - name: Ensure openscap-utils  is installed
-    #   ansible.builtin.package:
-    #     name: openscap-utils
+    # - name: Install rpm files (CentOS)
+    #   yum:
+    #     name: "{{ item.path }}"
     #     state: present
+    #   loop: "{{ rpm_files.files }}"
+    #   when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+    #   notify: Update yum cache
+    #   ignore_errors: yes
+    #   no_log: true
+
+    - name: Ensure scap-security-guide is installed
+      ansible.builtin.package:
+        name: scap-security-guide
+        state: present
+
+    - name: Ensure openscap-utils  is installed
+      ansible.builtin.package:
+        name: openscap-utils
+        state: present
 
     - name: Deploy xccdf_eval script to the host
       ansible.builtin.template:
