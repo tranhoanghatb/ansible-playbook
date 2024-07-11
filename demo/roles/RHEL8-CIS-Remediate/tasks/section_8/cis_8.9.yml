@@ -138,7 +138,6 @@
     path: "{{ item.path }}"
     regexp: '^(.*)NOPASSWD(.*)$'
     line: '\1PASSWD\2'
-    validate: '/usr/sbin/visudo -cf %s'
   with_items: "{{ sudoers_d_files.files }}"
 
 - name: Find /etc/sudoers.d/ files
