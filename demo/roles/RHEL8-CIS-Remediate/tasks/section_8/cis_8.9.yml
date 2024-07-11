@@ -126,12 +126,20 @@
   - restrict_strategy
   - sudo_require_authentication
 
-- name: Replace NOPASSWD with PASSWD in sudoers file
+- name: Find sudoers.d files
+  find:
+    paths: /etc/sudoers.d
+    file_type: file
+    recurse: yes
+  register: sudoers_d_files
+
+- name: Replace NOPASSWD with PASSWD in sudoers.d files
   lineinfile:
-    path: /etc/sudoers
+    path: "{{ item.path }}"
     regexp: '^(.*)NOPASSWD(.*)$'
     line: '\1PASSWD\2'
     validate: '/usr/sbin/visudo -cf %s'
+  with_items: "{{ sudoers_d_files.files }}"
 
 - name: Find /etc/sudoers.d/ files
   ansible.builtin.find:
