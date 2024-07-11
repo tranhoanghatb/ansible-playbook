@@ -126,25 +126,22 @@
   - restrict_strategy
   - sudo_require_authentication
 
-- name: Remove lines containing NOPASSWD from sudoers files
-  ansible.builtin.replace:
-    regexp: (^(?!#).*[\s]+NOPASSWD[\s]*\:.*$)
-    replace: '# \g<1>'
-    path: '{{ item.path }}'
-    validate: /usr/sbin/visudo -cf %s
-  with_items:
-  - path: /etc/sudoers
-  - '{{ sudoers.files }}'
-  tags:
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-IA-11
-  - PCI-DSSv4-2.2.6
-  - low_complexity
-  - low_disruption
-  - medium_severity
-  - no_reboot_needed
-  - restrict_strategy
-  - sudo_require_authentication
+- name: Ensure sudoers file is properly formatted
+  command: visudo -c
+  register: visudo_check
+  ignore_errors: yes
+
+- name: Fail if sudoers file is not properly formatted
+  fail:
+    msg: "Sudoers file is not valid. Aborting to prevent lockout."
+  when: visudo_check.rc != 0
+
+- name: Replace NOPASSWD with PASSWD in sudoers file
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '^(.*)NOPASSWD(.*)$'
+    line: '\1PASSWD\2'
+    validate: '/usr/sbin/visudo -cf %s'
 
 - name: Find /etc/sudoers.d/ files
   ansible.builtin.find:
