@@ -134,10 +134,11 @@
   register: sudoers_d_files
 
 - name: Replace NOPASSWD with PASSWD in sudoers.d files
-  lineinfile:
+  replace:
     path: "{{ item.path }}"
-    regexp: '^(.*)NOPASSWD(.*)$'
-    line: '\1PASSWD\2'
+    regexp: 'NOPASSWD'
+    replace: 'PASSWD'
+    # validate: '/usr/sbin/visudo -cf %s'
   with_items: "{{ sudoers_d_files.files }}"
 
 - name: Find /etc/sudoers.d/ files
