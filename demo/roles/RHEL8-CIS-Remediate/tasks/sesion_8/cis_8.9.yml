@@ -1,0 +1,34 @@
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - PCI-DSSv4-2.2.6
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+  - use_pam_wheel_group_for_su
+- name: XCCDF Value var_pam_wheel_group_for_su # promote to variable
+  set_fact:
+    var_pam_wheel_group_for_su: !!str sugroup
+  tags:
+    - always
+
+- name: Enforce Usage of pam_wheel with Group Parameter for su Authentication - Add
+    the group to the /etc/pam.d/su file
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/su
+    state: present
+    regexp: ^[\s]*#[\s]*auth[\s]+required[\s]+pam_wheel\.so[\s]+use_uid group=$
+    line: auth             required        pam_wheel.so use_uid group={{ var_pam_wheel_group_for_su
+      }}
+  when: '"pam" in ansible_facts.packages'
+  tags:
+  - PCI-DSSv4-2.2.6
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+  - use_pam_wheel_group_for_su

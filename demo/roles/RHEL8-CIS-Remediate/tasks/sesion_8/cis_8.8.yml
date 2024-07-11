@@ -1,0 +1,48 @@
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - PCI-DSSv4-2.2.6
+  - ensure_pam_wheel_group_empty
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+- name: XCCDF Value var_pam_wheel_group_for_su # promote to variable
+  set_fact:
+    var_pam_wheel_group_for_su: !!str sugroup
+  tags:
+    - always
+
+- name: Ensure the Group Used by pam_wheel.so Module Exists on System and is Empty
+    - Ensure {{ var_pam_wheel_group_for_su }} Group Exists
+  ansible.builtin.group:
+    name: '{{ var_pam_wheel_group_for_su }}'
+    state: present
+  when: '"pam" in ansible_facts.packages'
+  tags:
+  - PCI-DSSv4-2.2.6
+  - ensure_pam_wheel_group_empty
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+
+- name: Ensure the Group Used by pam_wheel.so Module Exists on System and is Empty
+    - Ensure {{ var_pam_wheel_group_for_su }} Group is Empty
+  ansible.builtin.lineinfile:
+    path: /etc/group
+    regexp: ^({{ var_pam_wheel_group_for_su }}:[^:]+:[0-9]+:).*$
+    line: \1
+    backrefs: true
+  when: '"pam" in ansible_facts.packages'
+  tags:
+  - PCI-DSSv4-2.2.6
+  - ensure_pam_wheel_group_empty
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
