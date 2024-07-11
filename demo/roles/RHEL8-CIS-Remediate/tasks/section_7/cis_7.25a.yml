@@ -6,6 +6,17 @@
 
 - name: Set DefaultZone for firewalld
   block:
+  - name: Ensure firewalld is installed
+    yum:
+      name: firewalld
+      state: present
+
+  - name: Start and enable firewalld service
+    service:
+      name: firewalld
+      state: started
+      enabled: yes
+
   - name: Install Python 3
     yum:
       name: python3
@@ -58,7 +69,7 @@
     when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
 
   - name: Allow SSH service through firewalld
-    ansible.posix.firewalld:
+    firewalld:
         port: 22/tcp
         zone: "{{ zone_value }}"
         permanent: yes
