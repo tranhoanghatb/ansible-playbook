@@ -58,7 +58,7 @@
     when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
 
   - name: Allow SSH service through firewalld
-    firewalld:
+    ansible.posix.firewalld:
         port: 22/tcp
         zone: "{{ zone_value }}"
         permanent: yes
