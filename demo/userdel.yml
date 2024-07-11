@@ -1,0 +1,29 @@
+---
+- name: Remove sudoer user
+  hosts: all
+  become: yes
+  vars:
+    sudoer_user: rocky  # Replace with the actual username
+  tasks:
+    - name: Remove user from /etc/sudoers
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%{{ sudoer_user }}'
+        state: absent
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Find sudoers.d files
+      find:
+        paths: /etc/sudoers.d
+        file_type: file
+        recurse: yes
+      register: sudoers_d_files
+
+    - name: Remove user from sudoers.d files
+      lineinfile:
+        path: "{{ item.path }}"
+        regexp: '^%{{ sudoer_user }}'
+        state: absent
+        validate: '/usr/sbin/visudo -cf %s'
+      with_items: "{{ sudoers_d_files.files }}"
+
