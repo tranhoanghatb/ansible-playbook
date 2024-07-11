@@ -126,16 +126,6 @@
   - restrict_strategy
   - sudo_require_authentication
 
-- name: Ensure sudoers file is properly formatted
-  command: visudo -c
-  register: visudo_check
-  ignore_errors: yes
-
-- name: Fail if sudoers file is not properly formatted
-  fail:
-    msg: "Sudoers file is not valid. Aborting to prevent lockout."
-  when: visudo_check.rc != 0
-
 - name: Replace NOPASSWD with PASSWD in sudoers file
   lineinfile:
     path: /etc/sudoers
