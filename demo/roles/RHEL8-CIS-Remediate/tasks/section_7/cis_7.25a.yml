@@ -6,7 +6,26 @@
 
 - name: Set DefaultZone for firewalld
   block:
+    - name: Install Python 3
+      apt:
+        name: python3
+        state: present
 
+    - name: Install pip for Python 3
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Ensure Python 3 and pip are installed
+      command: python3 --version
+      register: python3_version
+
+    - debug:
+        msg: "Python 3 version: {{ python3_version.stdout }}"
+
+    - name: Ensure pip3 is installed
+      command: pip3 --version
+      register: pip3_version
   - name: Check for duplicate values
     lineinfile:
       path: /etc/firewalld/firewalld.conf
