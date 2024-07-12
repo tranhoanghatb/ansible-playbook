@@ -7,6 +7,15 @@
 
   tasks:
 
+    - name: Add repo
+      lineinfile:
+        path:  /etc/apt/sources.list
+        line: 'deb http://ftp.de.debian.org/debian buster main'
+        insertafter: EOF
+
+    - name: Update the apt package index
+      apt:
+        update_cache: yes
 
     - name: Ensure scap-security-guide is installed
       ansible.builtin.package:
@@ -17,6 +26,11 @@
       ansible.builtin.package:
         name: libopenscap8
         state: present
+
+    - name: Copy library from local to remote
+      copy:
+        src: templates/ssg-debian12-ds.xml
+        dest: /usr/share/xml/scap/ssg/content/ssg-debian12-ds.xml 
 
     - name: Deploy xccdf_eval script to the host
       ansible.builtin.template:
