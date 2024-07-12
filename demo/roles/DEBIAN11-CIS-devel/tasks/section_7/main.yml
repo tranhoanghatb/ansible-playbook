@@ -1,0 +1,5 @@
+---
+
+- name: "SECTION | 7 | PCI DSS"
+  ansible.builtin.import_tasks:
+      file: cis_7*.yml

@@ -193,6 +193,10 @@
 #   tags:
 #       - section6
 
+- name: Include section 7 patches
+  ansible.builtin.import_tasks:
+      file: section_7/main.yml
+
 - name: run auditd logic
   ansible.builtin.import_tasks:
       file: auditd.yml
