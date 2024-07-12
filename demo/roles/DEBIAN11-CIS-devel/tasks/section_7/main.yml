@@ -1,5 +1,6 @@
 ---
 
-- name: "SECTION | 7 | PCI DSS"
-  ansible.builtin.import_tasks:
-      file: cis_7*.yml
+- name: "SECTION | 7 | PCI-DSS"
+  ansible.builtin.include_tasks: "{{ item }}"
+  with_fileglob:
+        - "cis_7*.yml"
