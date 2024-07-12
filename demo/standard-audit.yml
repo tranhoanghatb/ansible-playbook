@@ -1,0 +1,57 @@
+---
+- name: Run OpenSCAP xccdf eval on multiple hosts
+  hosts: all
+  become: yes
+  vars:
+    oscap_script: /tmp/xccdf_eval_debian.sh
+
+  tasks:
+
+
+    - name: Ensure scap-security-guide is installed
+      ansible.builtin.package:
+        name: ssg-debian
+        state: present
+
+    - name: Ensure openscap-utils  is installed
+      ansible.builtin.package:
+        name: libopenscap8
+        state: present
+
+    - name: Deploy xccdf_eval script to the host
+      ansible.builtin.template:
+        src: templates/xccdf_eval_debian.sh.j2
+        dest: "{{ oscap_script }}"
+        mode: '0755'
+
+    - name: Execute the OpenSCAP evaluation script
+      ansible.builtin.command: "{{ oscap_script }}"
+      #      shell: /tmp/xccdf_eval.sh
+      register: oscap_result
+      ignore_errors: yes
+      no_log: true
+
+    - name: Find OpenSCAP report on remote host 
+      ansible.builtin.find:
+        paths: "/tmp"
+        patterns: "*.html"
+      register: found_files
+
+    - name: Fetch the OpenSCAP report
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "reports/{{ inventory_hostname }}/"
+        flat: yes
+      loop: "{{ found_files.files }}"
+
+
+    - name: Clean up the remote script
+      ansible.builtin.file:
+        path: "{{ oscap_script }}"
+        state: absent
+
+    - name: Clean up the remote reports 
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ found_files.files }}"

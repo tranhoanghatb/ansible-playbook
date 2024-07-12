@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PROFILE="xccdf_org.ssgproject.content_profile_standard"
+INPUT="/usr/share/xml/scap/ssg/content/ssg-debian11-ds.xml"
+REPORT="/tmp/$(hostname)-pci-dss-report-$(date +"%d-%m-%Y_%H-%M-%S").html"
+
+oscap xccdf eval --profile $PROFILE --report $REPORT $INPUT
+
