@@ -1,13 +1,13 @@
 ---
 
-- name: Check OS version and family
-  ansible.builtin.fail:
-      msg: "This role can only be run against Debian 11. {{ ansible_facts.distribution }} {{ ansible_facts.distribution_major_version }} is not supported."
-  when:
-      - ansible_facts.distribution == 'Debian'
-      - ansible_facts.distribution_major_version is version_compare('11', '!=')
-  tags:
-      - always
+# - name: Check OS version and family
+#   ansible.builtin.fail:
+#       msg: "This role can only be run against Debian 11. {{ ansible_facts.distribution }} {{ ansible_facts.distribution_major_version }} is not supported."
+#   when:
+#       - ansible_facts.distribution == 'Debian'
+#       - ansible_facts.distribution_major_version is version_compare('11', '!=')
+#   tags:
+#       - always
 
 - name: Check ansible version
   ansible.builtin.assert:
@@ -151,47 +151,47 @@
   tags:
       - always
 
-# - name: Include section 1 patches
-#   ansible.builtin.import_tasks:
-#       file: section_1/main.yml
-#   when: debian11cis_section1
-#   tags:
-#       - section1
+- name: Include section 1 patches
+  ansible.builtin.import_tasks:
+      file: section_1/main.yml
+  when: debian11cis_section1
+  tags:
+      - section1
 
-# - name: Include section 2 patches
-#   ansible.builtin.import_tasks:
-#       file: section_2/main.yml
-#   when: debian11cis_section2
-#   tags:
-#       - section2
+- name: Include section 2 patches
+  ansible.builtin.import_tasks:
+      file: section_2/main.yml
+  when: debian11cis_section2
+  tags:
+      - section2
 
-# - name: Include section 3 patches
-#   ansible.builtin.import_tasks:
-#       file: section_3/main.yml
-#   when: debian11cis_section3
-#   tags:
-#       - section3
+- name: Include section 3 patches
+  ansible.builtin.import_tasks:
+      file: section_3/main.yml
+  when: debian11cis_section3
+  tags:
+      - section3
 
-# - name: Include section 4 patches
-#   ansible.builtin.import_tasks:
-#       file: section_4/main.yml
-#   when: debian11cis_section4
-#   tags:
-#       - section4
+- name: Include section 4 patches
+  ansible.builtin.import_tasks:
+      file: section_4/main.yml
+  when: debian11cis_section4
+  tags:
+      - section4
 
-# - name: Include section 5 patches
-#   ansible.builtin.import_tasks:
-#       file: section_5/main.yml
-#   when: debian11cis_section5
-#   tags:
-#       - section5
+- name: Include section 5 patches
+  ansible.builtin.import_tasks:
+      file: section_5/main.yml
+  when: debian11cis_section5
+  tags:
+      - section5
 
-# - name: Include section 6 patches
-#   ansible.builtin.import_tasks:
-#       file: section_6/main.yml
-#   when: debian11cis_section6
-#   tags:
-#       - section6
+- name: Include section 6 patches
+  ansible.builtin.import_tasks:
+      file: section_6/main.yml
+  when: debian11cis_section6
+  tags:
+      - section6
 
 - name: Include section 7 patches
   ansible.builtin.import_tasks:
