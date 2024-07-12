@@ -76,7 +76,7 @@ audit_capture_files_dir: result
 # How to retrieve audit binary
 # Options are copy or download - detailed settings at the bottom of this file
 # you will need to access to either github or the file already dowmloaded
-get_audit_binary_method: copy
+get_audit_binary_method: download
 
 ## if get_audit_binary_method - copy the following needs to be updated for your environment
 ## it is expected that it will be copied from somewhere accessible to the control node
@@ -85,7 +85,7 @@ audit_bin_copy_location: files/goss-linux-amd64
 
 # how to get audit files onto host options
 # options are git/copy/archive/get_url other e.g. if you wish to run from already downloaded conf
-audit_content: archive
+audit_content: git
 
 # If using either archive, copy, get_url:
 ## Note will work with .tar files - zip will require extra configuration
