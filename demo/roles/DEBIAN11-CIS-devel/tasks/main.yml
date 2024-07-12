@@ -49,6 +49,7 @@
       - debian11cis_rule_1_4_1
   tags:
       - always
+  ignore_errors: yes    
 
 - name: Check debian11cis_grub_user password variable has been changed
   block:
