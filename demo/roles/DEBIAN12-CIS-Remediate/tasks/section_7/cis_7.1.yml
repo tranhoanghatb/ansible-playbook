@@ -1,0 +1,816 @@
+- name: Ensure Log Files Are Owned By Appropriate Group - Set rsyslog logfile configuration
+    facts
+  ansible.builtin.set_fact:
+    rsyslog_etc_config: /etc/rsyslog.conf
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Get IncludeConfig directive
+  ansible.builtin.shell: |
+    grep -e '$IncludeConfig' {{ rsyslog_etc_config }} | cut -d ' ' -f 2 || true
+  register: rsyslog_old_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Get include files directives
+  ansible.builtin.shell: |
+    awk '/)/{f=0} /include\(/{f=1} f{ nf=gensub("^(include\\(|\\s*)file=\"(\\S+)\".*","\\2",1); if($0!=nf){ print nf }}' {{ rsyslog_etc_config }} || true
+  register: rsyslog_new_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Aggregate rsyslog includes
+  ansible.builtin.set_fact:
+    include_config_output: '{{ rsyslog_old_inc.stdout_lines + rsyslog_new_inc.stdout_lines
+      }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_old_inc is not skipped and rsyslog_new_inc is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - List all config files
+  ansible.builtin.find:
+    paths: '{{ item | dirname }}'
+    patterns: '{{ item | basename }}'
+    hidden: false
+    follow: true
+  loop: '{{ include_config_output | list + [rsyslog_etc_config] }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - include_config_output is defined
+  register: rsyslog_config_files
+  failed_when: false
+  changed_when: false
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Extract log files old format
+  ansible.builtin.shell: |
+    grep -oP '^[^(\s|#|\$)]+[\s]+.*[\s]+-?(/+[^:;\s]+);*\.*$' {{ item.1.path }} | \
+    awk '{print $NF}' | \
+    sed -e 's/^-//' || true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_old
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Extract log files new format
+  ansible.builtin.shell: |
+    grep -ozP "action\s*\(\s*type\s*=\s*\"omfile\"[^\)]*\)" {{ item.1.path }} | \
+    grep -aoP "\bFile\s*=\s*\"([/[:alnum:][:punct:]]*)\"\s*\)" | \
+    grep -oE "\"([/[:alnum:][:punct:]]*)\"" | \
+    tr -d "\""|| true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_new
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group - Sum all log files found
+  ansible.builtin.set_fact:
+    log_files: '{{ log_files_new.results | map(attribute=''stdout_lines'') | list
+      | flatten | unique + log_files_old.results | map(attribute=''stdout_lines'')
+      | list | flatten | unique }}'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+
+- name: Ensure Log Files Are Owned By Appropriate Group -Setup log files attribute
+  ansible.builtin.file:
+    path: '{{ item }}'
+    group: adm
+    state: file
+  loop: '{{ log_files | list | flatten | unique }}'
+  failed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_groupownership
+- name: Ensure Log Files Are Owned By Appropriate User - Set rsyslog logfile configuration
+    facts
+  ansible.builtin.set_fact:
+    rsyslog_etc_config: /etc/rsyslog.conf
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Get IncludeConfig directive
+  ansible.builtin.shell: |
+    grep -e '$IncludeConfig' {{ rsyslog_etc_config }} | cut -d ' ' -f 2 || true
+  register: rsyslog_old_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Get include files directives
+  ansible.builtin.shell: |
+    awk '/)/{f=0} /include\(/{f=1} f{ nf=gensub("^(include\\(|\\s*)file=\"(\\S+)\".*","\\2",1); if($0!=nf){ print nf }}' {{ rsyslog_etc_config }} || true
+  register: rsyslog_new_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Aggregate rsyslog includes
+  ansible.builtin.set_fact:
+    include_config_output: '{{ rsyslog_old_inc.stdout_lines + rsyslog_new_inc.stdout_lines
+      }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_old_inc is not skipped and rsyslog_new_inc is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - List all config files
+  ansible.builtin.find:
+    paths: '{{ item | dirname }}'
+    patterns: '{{ item | basename }}'
+    hidden: false
+    follow: true
+  loop: '{{ include_config_output | list + [rsyslog_etc_config] }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - include_config_output is defined
+  register: rsyslog_config_files
+  failed_when: false
+  changed_when: false
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Extract log files old format
+  ansible.builtin.shell: |
+    grep -oP '^[^(\s|#|\$)]+[\s]+.*[\s]+-?(/+[^:;\s]+);*\.*$' {{ item.1.path }} | \
+    awk '{print $NF}' | \
+    sed -e 's/^-//' || true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_old
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Extract log files new format
+  ansible.builtin.shell: |
+    grep -ozP "action\s*\(\s*type\s*=\s*\"omfile\"[^\)]*\)" {{ item.1.path }} | \
+    grep -aoP "\bFile\s*=\s*\"([/[:alnum:][:punct:]]*)\"\s*\)" | \
+    grep -oE "\"([/[:alnum:][:punct:]]*)\"" | \
+    tr -d "\""|| true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_new
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User - Sum all log files found
+  ansible.builtin.set_fact:
+    log_files: '{{ log_files_new.results | map(attribute=''stdout_lines'') | list
+      | flatten | unique + log_files_old.results | map(attribute=''stdout_lines'')
+      | list | flatten | unique }}'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+
+- name: Ensure Log Files Are Owned By Appropriate User -Setup log files attribute
+  ansible.builtin.file:
+    path: '{{ item }}'
+    owner: root
+    state: file
+  loop: '{{ log_files | list | flatten | unique }}'
+  failed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.2
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_ownership
+- name: Ensure System Log Files Have Correct Permissions - Set rsyslog logfile configuration
+    facts
+  ansible.builtin.set_fact:
+    rsyslog_etc_config: /etc/rsyslog.conf
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Get IncludeConfig directive
+  ansible.builtin.shell: |
+    grep -e '$IncludeConfig' {{ rsyslog_etc_config }} | cut -d ' ' -f 2 || true
+  register: rsyslog_old_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Get include files directives
+  ansible.builtin.shell: |
+    awk '/)/{f=0} /include\(/{f=1} f{ nf=gensub("^(include\\(|\\s*)file=\"(\\S+)\".*","\\2",1); if($0!=nf){ print nf }}' {{ rsyslog_etc_config }} || true
+  register: rsyslog_new_inc
+  changed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Aggregate rsyslog includes
+  ansible.builtin.set_fact:
+    include_config_output: '{{ rsyslog_old_inc.stdout_lines + rsyslog_new_inc.stdout_lines
+      }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_old_inc is not skipped and rsyslog_new_inc is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - List all config files
+  ansible.builtin.find:
+    paths: '{{ item | dirname }}'
+    patterns: '{{ item | basename }}'
+    hidden: false
+    follow: true
+  loop: '{{ include_config_output | list + [rsyslog_etc_config] }}'
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - include_config_output is defined
+  register: rsyslog_config_files
+  failed_when: false
+  changed_when: false
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Extract log files old format
+  ansible.builtin.shell: |
+    grep -oP '^[^(\s|#|\$)]+[\s]+.*[\s]+-?(/+[^:;\s]+);*\.*$' {{ item.1.path }} | \
+    awk '{print $NF}' | \
+    sed -e 's/^-//' || true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_old
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Extract log files new format
+  ansible.builtin.shell: |
+    grep -ozP "action\s*\(\s*type\s*=\s*\"omfile\"[^\)]*\)" {{ item.1.path }} | \
+    grep -aoP "\bFile\s*=\s*\"([/[:alnum:][:punct:]]*)\"\s*\)" | \
+    grep -oE "\"([/[:alnum:][:punct:]]*)\"" | \
+    tr -d "\""|| true
+  loop: '{{ rsyslog_config_files.results | default([]) | subelements(''files'') }}'
+  register: log_files_new
+  changed_when: false
+  when:
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - rsyslog_config_files is not skipped
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions - Sum all log files found
+  ansible.builtin.set_fact:
+    log_files: '{{ log_files_new.results | map(attribute=''stdout_lines'') | list
+      | flatten | unique + log_files_old.results | map(attribute=''stdout_lines'')
+      | list | flatten | unique }}'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+
+- name: Ensure System Log Files Have Correct Permissions -Setup log files attribute
+  ansible.builtin.file:
+    path: '{{ item }}'
+    mode: '0640'
+    state: file
+  loop: '{{ log_files | list | flatten | unique }}'
+  failed_when: false
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.5.1
+  - PCI-DSS-Req-10.5.2
+  - PCI-DSSv4-10.3.1
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - rsyslog_files_permissions
+- name: Ensure rsyslog is installed
+  package:
+    name: rsyslog
+    state: present
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-CM-6(a)
+  - enable_strategy
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - package_rsyslog_installed
+
+- name: Enable service rsyslog
+  block:
+
+  - name: Gather the package facts
+    package_facts:
+      manager: auto
+
+  - name: Enable service rsyslog
+    systemd:
+      name: rsyslog
+      enabled: 'yes'
+      state: started
+      masked: 'no'
+    when:
+    - '"rsyslog" in ansible_facts.packages'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-AU-4(1)
+  - NIST-800-53-CM-6(a)
+  - enable_strategy
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - service_rsyslog_enabled
+- name: Find /boot/ file(s)
+  command: find -H /boot/ -maxdepth 1 -perm /u+xs,g+xwrs,o+xwrt  -type f -regex "^.*System\.map.*$"
+  register: files_found
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+  - configure_strategy
+  - file_permissions_systemmap
+  - low_complexity
+  - low_disruption
+  - low_severity
+  - no_reboot_needed
+
+- name: Set permissions for /boot/ file(s)
+  file:
+    path: '{{ item }}'
+    mode: u-xs,g-xwrs,o-xwrt
+    state: file
+  with_items:
+  - '{{ files_found.stdout_lines }}'
+  tags:
+  - configure_strategy
+  - file_permissions_systemmap
+  - low_complexity
+  - low_disruption
+  - low_severity
+  - no_reboot_needed
+- name: List /etc/sysctl.d/*.conf files
+  find:
+    paths:
+    - /etc/sysctl.d/
+    - /run/sysctl.d/
+    - /usr/local/lib/sysctl.d/
+    - /usr/lib/sysctl.d/
+    contains: ^[\s]*fs.suid_dumpable.*$
+    patterns: '*.conf'
+    file_type: any
+  register: find_sysctl_d
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-SI-11(a)
+  - NIST-800-53-SI-11(b)
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_fs_suid_dumpable
+
+- name: Comment out any occurrences of fs.suid_dumpable from config files
+  replace:
+    path: '{{ item.path }}'
+    regexp: ^[\s]*fs.suid_dumpable
+    replace: '#fs.suid_dumpable'
+  loop: '{{ find_sysctl_d.files }}'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-SI-11(a)
+  - NIST-800-53-SI-11(b)
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_fs_suid_dumpable
+
+- name: Ensure sysctl fs.suid_dumpable is set to 0
+  sysctl:
+    name: fs.suid_dumpable
+    value: '0'
+    sysctl_file: /etc/sysctl.conf
+    state: present
+    reload: true
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-SI-11(a)
+  - NIST-800-53-SI-11(b)
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_fs_suid_dumpable
+- name: List /etc/sysctl.d/*.conf files
+  find:
+    paths:
+    - /etc/sysctl.d/
+    - /run/sysctl.d/
+    - /usr/local/lib/sysctl.d/
+    - /usr/lib/sysctl.d/
+    contains: ^[\s]*kernel.randomize_va_space.*$
+    patterns: '*.conf'
+    file_type: any
+  register: find_sysctl_d
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-171-3.1.7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SC-30
+  - NIST-800-53-SC-30(2)
+  - PCI-DSS-Req-2.2.1
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_kernel_randomize_va_space
+
+- name: Comment out any occurrences of kernel.randomize_va_space from config files
+  replace:
+    path: '{{ item.path }}'
+    regexp: ^[\s]*kernel.randomize_va_space
+    replace: '#kernel.randomize_va_space'
+  loop: '{{ find_sysctl_d.files }}'
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-171-3.1.7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SC-30
+  - NIST-800-53-SC-30(2)
+  - PCI-DSS-Req-2.2.1
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_kernel_randomize_va_space
+
+- name: Ensure sysctl kernel.randomize_va_space is set to 2
+  sysctl:
+    name: kernel.randomize_va_space
+    value: '2'
+    sysctl_file: /etc/sysctl.conf
+    state: present
+    reload: true
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-171-3.1.7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SC-30
+  - NIST-800-53-SC-30(2)
+  - PCI-DSS-Req-2.2.1
+  - PCI-DSSv4-3.3.1.1
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - reboot_required
+  - sysctl_kernel_randomize_va_space
+- name: Ensure cron is installed
+  package:
+    name: cron
+    state: present
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-CM-6(a)
+  - enable_strategy
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - package_cron_installed
+- name: Ensure inetutils-telnetd is removed
+  package:
+    name: inetutils-telnetd
+    state: absent
+  tags:
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - disable_strategy
+  - high_severity
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - package_inetutils-telnetd_removed
+- name: Ensure nis is removed
+  package:
+    name: nis
+    state: absent
+  tags:
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - low_severity
+  - no_reboot_needed
+  - package_nis_removed
+- name: Ensure ntp is installed
+  package:
+    name: ntp
+    state: present
+  when: ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-10.4
+  - enable_strategy
+  - high_severity
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - package_ntp_installed
