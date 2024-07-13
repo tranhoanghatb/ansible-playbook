@@ -193,241 +193,241 @@
       - systemd_tmp_mount_enabled
 
 
-    - name: Ensure group owner on /etc/sudoers.d/
-      file:
-        path: /etc/sudoers.d/
-        state: directory
-        group: root
-      tags:
-      - configure_strategy
-      - directory_groupowner_etc_sudoersd
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Ensure group owner on /etc/sudoers.d/
+    #   file:
+    #     path: /etc/sudoers.d/
+    #     state: directory
+    #     group: root
+    #   tags:
+    #   - configure_strategy
+    #   - directory_groupowner_etc_sudoersd
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Ensure owner on directory /etc/sudoers.d/
-      file:
-        path: /etc/sudoers.d/
-        state: directory
-        owner: '0'
-      tags:
-      - configure_strategy
-      - directory_owner_etc_sudoersd
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Ensure owner on directory /etc/sudoers.d/
+    #   file:
+    #     path: /etc/sudoers.d/
+    #     state: directory
+    #     owner: '0'
+    #   tags:
+    #   - configure_strategy
+    #   - directory_owner_etc_sudoersd
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Find /etc/sudoers.d/ file(s)
-      command: 'find -H /etc/sudoers.d/ -maxdepth 1 -perm /u+s,g+ws,o+xwrt  -type d '
-      register: files_found
-      changed_when: false
-      failed_when: false
-      check_mode: false
-      tags:
-      - configure_strategy
-      - directory_permissions_etc_sudoersd
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Find /etc/sudoers.d/ file(s)
+    #   command: 'find -H /etc/sudoers.d/ -maxdepth 1 -perm /u+s,g+ws,o+xwrt  -type d '
+    #   register: files_found
+    #   changed_when: false
+    #   failed_when: false
+    #   check_mode: false
+    #   tags:
+    #   - configure_strategy
+    #   - directory_permissions_etc_sudoersd
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
-    - name: Set permissions for /etc/sudoers.d/ file(s)
-      file:
-        path: '{{ item }}'
-        mode: u-s,g-ws,o-xwrt
-        state: directory
-      with_items:
-      - '{{ files_found.stdout_lines }}'
-      tags:
-      - configure_strategy
-      - directory_permissions_etc_sudoersd
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-
-
-    - name: Test for existence /etc/sudoers
-      stat:
-        path: /etc/sudoers
-      register: file_exists
-      tags:
-      - configure_strategy
-      - file_groupowner_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-
-    - name: Ensure group owner root on /etc/sudoers
-      file:
-        path: /etc/sudoers
-        group: root
-      when: file_exists.stat is defined and file_exists.stat.exists
-      tags:
-      - configure_strategy
-      - file_groupowner_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Set permissions for /etc/sudoers.d/ file(s)
+    #   file:
+    #     path: '{{ item }}'
+    #     mode: u-s,g-ws,o-xwrt
+    #     state: directory
+    #   with_items:
+    #   - '{{ files_found.stdout_lines }}'
+    #   tags:
+    #   - configure_strategy
+    #   - directory_permissions_etc_sudoersd
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Test for existence /etc/sudoers
-      stat:
-        path: /etc/sudoers
-      register: file_exists
-      tags:
-      - configure_strategy
-      - file_owner_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Test for existence /etc/sudoers
+    #   stat:
+    #     path: /etc/sudoers
+    #   register: file_exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_groupowner_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
-    - name: Ensure owner 0 on /etc/sudoers
-      file:
-        path: /etc/sudoers
-        owner: '0'
-      when: file_exists.stat is defined and file_exists.stat.exists
-      tags:
-      - configure_strategy
-      - file_owner_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-
-
-    - name: Test for existence /etc/sudoers
-      stat:
-        path: /etc/sudoers
-      register: file_exists
-      tags:
-      - configure_strategy
-      - file_permissions_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-
-    - name: Ensure permission u-xws,g-xws,o-xwrt on /etc/sudoers
-      file:
-        path: /etc/sudoers
-        mode: u-xws,g-xws,o-xwrt
-      when: file_exists.stat is defined and file_exists.stat.exists
-      tags:
-      - configure_strategy
-      - file_permissions_etc_sudoers
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Ensure group owner root on /etc/sudoers
+    #   file:
+    #     path: /etc/sudoers
+    #     group: root
+    #   when: file_exists.stat is defined and file_exists.stat.exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_groupowner_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Gather the package facts
-      package_facts:
-        manager: auto
-      tags:
-      - configure_strategy
-      - file_permissions_sudo
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Test for existence /etc/sudoers
+    #   stat:
+    #     path: /etc/sudoers
+    #   register: file_exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_owner_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
-    - name: Test for existence /usr/bin/sudo
-      stat:
-        path: /usr/bin/sudo
-      register: file_exists
-      when: '"sudo" in ansible_facts.packages'
-      tags:
-      - configure_strategy
-      - file_permissions_sudo
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-
-    - name: Ensure permission 4110 on /usr/bin/sudo
-      file:
-        path: /usr/bin/sudo
-        mode: '4110'
-      when:
-      - '"sudo" in ansible_facts.packages'
-      - file_exists.stat is defined and file_exists.stat.exists
-      tags:
-      - configure_strategy
-      - file_permissions_sudo
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
+    # - name: Ensure owner 0 on /etc/sudoers
+    #   file:
+    #     path: /etc/sudoers
+    #     owner: '0'
+    #   when: file_exists.stat is defined and file_exists.stat.exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_owner_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Ensure noexec is enabled in /etc/sudoers
-      lineinfile:
-        path: /etc/sudoers
-        regexp: ^[\s]*Defaults.*\bnoexec\b.*$
-        line: Defaults noexec
-        validate: /usr/sbin/visudo -cf %s
-      tags:
-      - high_severity
-      - low_complexity
-      - low_disruption
-      - no_reboot_needed
-      - restrict_strategy
-      - sudo_add_noexec
+    # - name: Test for existence /etc/sudoers
+    #   stat:
+    #     path: /etc/sudoers
+    #   register: file_exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_permissions_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+
+    # - name: Ensure permission u-xws,g-xws,o-xwrt on /etc/sudoers
+    #   file:
+    #     path: /etc/sudoers
+    #     mode: u-xws,g-xws,o-xwrt
+    #   when: file_exists.stat is defined and file_exists.stat.exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_permissions_etc_sudoers
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Ensure requiretty is enabled in /etc/sudoers
-      lineinfile:
-        path: /etc/sudoers
-        regexp: ^[\s]*Defaults.*\brequiretty\b.*$
-        line: Defaults requiretty
-        validate: /usr/sbin/visudo -cf %s
-      tags:
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-      - restrict_strategy
-      - sudo_add_requiretty
+    # - name: Gather the package facts
+    #   package_facts:
+    #     manager: auto
+    #   tags:
+    #   - configure_strategy
+    #   - file_permissions_sudo
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+
+    # - name: Test for existence /usr/bin/sudo
+    #   stat:
+    #     path: /usr/bin/sudo
+    #   register: file_exists
+    #   when: '"sudo" in ansible_facts.packages'
+    #   tags:
+    #   - configure_strategy
+    #   - file_permissions_sudo
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+
+    # - name: Ensure permission 4110 on /usr/bin/sudo
+    #   file:
+    #     path: /usr/bin/sudo
+    #     mode: '4110'
+    #   when:
+    #   - '"sudo" in ansible_facts.packages'
+    #   - file_exists.stat is defined and file_exists.stat.exists
+    #   tags:
+    #   - configure_strategy
+    #   - file_permissions_sudo
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
 
 
-    - name: Gather the package facts
-      package_facts:
-        manager: auto
-      tags:
-      - PCI-DSS-Req-10.2.5
-      - PCI-DSSv4-2.2.6
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-      - restrict_strategy
-      - sudo_add_use_pty
+    # - name: Ensure noexec is enabled in /etc/sudoers
+    #   lineinfile:
+    #     path: /etc/sudoers
+    #     regexp: ^[\s]*Defaults.*\bnoexec\b.*$
+    #     line: Defaults noexec
+    #     validate: /usr/sbin/visudo -cf %s
+    #   tags:
+    #   - high_severity
+    #   - low_complexity
+    #   - low_disruption
+    #   - no_reboot_needed
+    #   - restrict_strategy
+    #   - sudo_add_noexec
 
-    - name: Ensure use_pty is enabled in /etc/sudoers
-      lineinfile:
-        path: /etc/sudoers
-        regexp: ^[\s]*Defaults.*\buse_pty\b.*$
-        line: Defaults use_pty
-        validate: /usr/sbin/visudo -cf %s
-      when: '"sudo" in ansible_facts.packages'
-      tags:
-      - PCI-DSS-Req-10.2.5
-      - PCI-DSSv4-2.2.6
-      - low_complexity
-      - low_disruption
-      - medium_severity
-      - no_reboot_needed
-      - restrict_strategy
-      - sudo_add_use_pty
+
+    # - name: Ensure requiretty is enabled in /etc/sudoers
+    #   lineinfile:
+    #     path: /etc/sudoers
+    #     regexp: ^[\s]*Defaults.*\brequiretty\b.*$
+    #     line: Defaults requiretty
+    #     validate: /usr/sbin/visudo -cf %s
+    #   tags:
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+    #   - restrict_strategy
+    #   - sudo_add_requiretty
+
+
+    # - name: Gather the package facts
+    #   package_facts:
+    #     manager: auto
+    #   tags:
+    #   - PCI-DSS-Req-10.2.5
+    #   - PCI-DSSv4-2.2.6
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+    #   - restrict_strategy
+    #   - sudo_add_use_pty
+
+    # - name: Ensure use_pty is enabled in /etc/sudoers
+    #   lineinfile:
+    #     path: /etc/sudoers
+    #     regexp: ^[\s]*Defaults.*\buse_pty\b.*$
+    #     line: Defaults use_pty
+    #     validate: /usr/sbin/visudo -cf %s
+    #   when: '"sudo" in ansible_facts.packages'
+    #   tags:
+    #   - PCI-DSS-Req-10.2.5
+    #   - PCI-DSSv4-2.2.6
+    #   - low_complexity
+    #   - low_disruption
+    #   - medium_severity
+    #   - no_reboot_needed
+    #   - restrict_strategy
+    #   - sudo_add_use_pty
 
 
     - name: Set 'StopIdleSessionSec' to '{{ var_logind_session_timeout }}' in the [Login]
