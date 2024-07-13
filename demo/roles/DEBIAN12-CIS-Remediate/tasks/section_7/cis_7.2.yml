@@ -721,6 +721,7 @@
         mode: u-s,g-wxs,o=
       loop: '{{ q(''ansible.builtin.subelements'', found_init_files.results, ''files'',
         {''skip_missing'': True}) }}'
+      ignore_errors: yes
       tags:
       - file_permission_user_init_files
       - low_complexity
