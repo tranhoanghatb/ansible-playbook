@@ -705,6 +705,7 @@
       - item.key not in ["nobody", "nfsnobody"]
       - item.value[1] | int >= 1000
       register: found_init_files
+      ignore_errors: yes
       tags:
       - file_permission_user_init_files
       - low_complexity
