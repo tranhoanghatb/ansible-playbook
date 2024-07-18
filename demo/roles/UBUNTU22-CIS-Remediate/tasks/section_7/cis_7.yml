@@ -522,6 +522,7 @@
     line: Defaults \1logfile={{ var_sudo_logfile }}\2
     validate: /usr/sbin/visudo -cf %s
     backrefs: true
+  ignore_errors: yes
   register: edit_sudoers_logfile_option
   when: '"sudo" in ansible_facts.packages'
   tags:
