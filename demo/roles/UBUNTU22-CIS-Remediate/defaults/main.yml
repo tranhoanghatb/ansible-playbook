@@ -57,18 +57,18 @@ ubtu22cis_uses_root: false
 ### vars/auditd.yml for other settings  ###
 
 # Allow audit to setup the requirements including installing git (if option chosen and downloading and adding goss binary to system)
-setup_audit: true
+setup_audit: false
 
 # enable audits to run - this runs the audit and get the latest content
-run_audit: true
+run_audit: false
 # Run heavy tests - some tests can have more impact on a system enabling these can have greater impact on a system
-audit_run_heavy_tests: true
+audit_run_heavy_tests: false
 
 ## Only run Audit do not remediate
 audit_only: false
 ### As part of audit_only ###
 # This will enable files to be copied back to control node in audit_only mode
-fetch_audit_files: true
+fetch_audit_files: false
 # Path to copy the files to will create dir structure in audit_only mode
 audit_capture_files_dir: result
 #############################
@@ -76,7 +76,7 @@ audit_capture_files_dir: result
 # How to retrieve audit binary
 # Options are copy or download - detailed settings at the bottom of this file
 # you will need to access to either github or the file already dowmloaded
-get_audit_binary_method: copy
+get_audit_binary_method: download
 
 ## if get_audit_binary_method - copy the following needs to be updated for your environment
 ## it is expected that it will be copied from somewhere accessible to the control node
@@ -85,7 +85,7 @@ audit_bin_copy_location: files/goss-linux-amd64
 
 # how to get audit files onto host options
 # options are git/copy/archive/get_url other e.g. if you wish to run from already downloaded conf
-audit_content: archive
+audit_content: git
 
 # If using either archive, copy, get_url:
 ## Note will work with .tar files - zip will require extra configuration
