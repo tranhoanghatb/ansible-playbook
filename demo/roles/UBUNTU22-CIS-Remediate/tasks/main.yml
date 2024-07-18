@@ -175,6 +175,10 @@
   tags:
       - section6
 
+- name: Run Section 7 tasks
+  ansible.builtin.import_tasks:
+      file: section_7/main.yml
+
 - name: Run auditd logic
   ansible.builtin.import_tasks:
       file: auditd.yml
