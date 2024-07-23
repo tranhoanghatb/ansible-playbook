@@ -1,0 +1,28 @@
+---
+- name: Delete multiple sudoer users and their home directories
+  hosts: all
+  become: yes
+  vars:
+    users:
+      - username: test1
+      - username: test2
+      - username: test3
+      - username: test4
+      - username: test5
+      - username: test6
+      - username: test7
+
+
+  tasks:
+    - name: Remove users and their home directories
+      user:
+        name: "{{ item.username }}"
+        state: absent
+        remove: yes
+      loop: "{{ users }}"
+
+    - name: Remove sudoers files for users
+      file:
+        path: "/etc/sudoers.d/{{ item.username }}"
+        state: absent
+      loop: "{{ users }}"
