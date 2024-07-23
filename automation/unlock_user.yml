@@ -1,0 +1,30 @@
+---
+- name: Unlock user accounts and reset expired passwords
+  hosts: all
+  become: yes
+  vars:
+    users:
+      - username: user1
+        password: "{{ 'new_password1' | password_hash('sha512') }}"
+#      - username: user2
+#        password: "{{ 'new_password2' | password_hash('sha512') }}"
+#      - username: user3
+#        password: "{{ 'new_password3' | password_hash('sha512') }}"
+
+  tasks:
+    - name: Unlock user accounts
+      user:
+        name: "{{ item.username }}"
+        state: present
+        password_lock: no
+      loop: "{{ users }}"
+
+    - name: Reset user passwords
+      user:
+        name: "{{ item.username }}"
+        password: "{{ item.password }}"
+      loop: "{{ users }}"
+
+    - name: Ensure password expiry is updated
+      command: chage -I -1 -m 0 -M 99999 -E -1 "{{ item.username }}"
+      loop: "{{ users }}"
