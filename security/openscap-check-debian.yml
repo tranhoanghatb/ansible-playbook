@@ -1,0 +1,126 @@
+---
+- name: Run OpenSCAP xccdf eval on multiple hosts
+  hosts: all
+  become: yes
+  vars:
+    oscap_script: /tmp/xccdf_eval_debian.sh.j2
+    oscap_lib: /usr/share/xml/scap/ssg/content/ssg-debian12-ds.xml
+
+  tasks:
+
+    - name: Get distribution information
+      ansible.builtin.setup:
+        filter: ansible_distribution
+      register: distro_info
+
+    - name: Copy tar.gz file to remote server debian
+      copy:
+        src: files/debian/pci-dss.tar.gz
+        dest: /tmp/
+      when: distro_info.ansible_facts.ansible_distribution == "Debian"
+
+    - name: Copy tar.gz file to remote server CentOS
+      copy:
+        src: files/centos/pci-dss.tar.gz
+        dest: /tmp/
+      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+
+    - name: Extract tar.gz file on remote server
+      unarchive:
+        src: /tmp/pci-dss.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Clean up tar.gz file on remote server
+      file:
+        path: /tmp/pci-dss.tar.gz
+        state: absent
+
+    - name: Find all deb files in the specified folder (Debian)
+      find:
+        paths: /tmp/pci-dss
+        patterns: "*.deb"
+      when: distro_info.ansible_facts.ansible_distribution == "Debian"
+      register: deb_files
+
+    - name: Find all rpm files in the specified folder (CentOS)
+      find:
+        paths: /tmp/pci-dss
+        patterns: "*.rpm"
+      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+      register: rpm_files
+
+    - name: Install deb files (Debian)
+      apt:
+        deb: "{{ item.path }}"
+        state: present
+        dpkg_options: "force-confdef,force-confold"
+      loop: "{{ deb_files.files }}"
+      when: distro_info.ansible_facts.ansible_distribution == "Debian"
+      notify: Update apt cache
+      ignore_errors: yes
+      no_log: true
+
+    - name: Install rpm files (CentOS)
+      yum:
+        name: "{{ item.path }}"
+        state: present
+      loop: "{{ rpm_files.files }}"
+      when: distro_info.ansible_facts.ansible_distribution == "CentOS"
+      notify: Update yum cache
+      ignore_errors: yes
+      no_log: true
+
+    # - name: Ensure scap-security-guide is installed
+    #   ansible.builtin.package:
+    #     name: scap-security-guide
+    #     state: present
+
+    - name: Ensure openscap-utils  is installed
+      ansible.builtin.package:
+        name: openscap-utils
+        state: present
+
+    - name: Deploy xccdf_eval script to the host
+      ansible.builtin.template:
+        src: templates/ssg-debian12-ds.xml
+        dest: "{{ oscap_script }}"
+        mode: '0755'
+        
+    - name: Deploy xccdf_eval lib to the host
+      ansible.builtin.template:
+        src: templates/xccdf_eval_debian.sh.j2
+        dest: "{{ oscap_lib }}"
+#        mode: '0755'
+
+    - name: Execute the OpenSCAP evaluation script
+      ansible.builtin.command: "{{ oscap_script }}"
+      #      shell: /tmp/xccdf_eval.sh
+      register: oscap_result
+      ignore_errors: yes
+      no_log: true
+
+    - name: Find OpenSCAP report on remote host 
+      ansible.builtin.find:
+        paths: "/tmp"
+        patterns: "*.html"
+      register: found_files
+
+    - name: Fetch the OpenSCAP report
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "reports/{{ inventory_hostname }}/"
+        flat: yes
+      loop: "{{ found_files.files }}"
+
+
+    - name: Clean up the remote script
+      ansible.builtin.file:
+        path: "{{ oscap_script }}"
+        state: absent
+
+    - name: Clean up the remote reports 
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ found_files.files }}"
