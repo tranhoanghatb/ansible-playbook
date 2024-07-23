@@ -70,10 +70,10 @@
       ignore_errors: yes
       no_log: true
 
-    - name: Ensure scap-security-guide is installed
-      ansible.builtin.package:
-        name: scap-security-guide
-        state: present
+    # - name: Ensure scap-security-guide is installed
+    #   ansible.builtin.package:
+    #     name: scap-security-guide
+    #     state: present
 
     - name: Ensure openscap-utils  is installed
       ansible.builtin.package:
