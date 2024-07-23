@@ -6,6 +6,8 @@
 
 [debian12]
 #10.36.36.46 ansible_user=administrator
+soc-selks-siem
+soc-netflow-nsm
 
 [ubuntu22]
-10.36.36.46 ansible_user=administrator
+#10.36.36.46 ansible_user=administrator

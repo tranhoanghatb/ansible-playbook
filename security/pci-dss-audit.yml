@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars:
-    oscap_script: /tmp/xccdf_eval.sh
+    oscap_script: /tmp/xccdf_eval_debian.sh.j2
 
   tasks:
 
@@ -82,7 +82,7 @@
 
     - name: Deploy xccdf_eval script to the host
       ansible.builtin.template:
-        src: templates/xccdf_eval.sh.j2
+        src: templates/xccdf_eval_debian.sh.j2
         dest: "{{ oscap_script }}"
         mode: '0755'
 
