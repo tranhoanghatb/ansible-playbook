@@ -1,0 +1,25 @@
+---
+- name: Create multiple sudoer users
+  hosts: all
+  become: yes
+  vars:
+    users:
+      - username: test7
+        password: "{{ 'ktm#$123' | password_hash('sha512') }}"
+          #      - username: user3
+          #        password: "{{ 'password3' | password_hash('sha512') }}"
+
+  tasks:
+    - name: Ensure users are present
+      user:
+        name: "{{ item.username }}"
+        password: "{{ item.password }}"
+        shell: /bin/bash
+      loop: "{{ users }}"
+
+    - name: Add users to sudoers
+      copy:
+        dest: "/etc/sudoers.d/{{ item.username }}"
+        content: "{{ item.username }} ALL=(ALL) NOPASSWD:ALL\n"
+        mode: '0440'
+      loop: "{{ users }}"
