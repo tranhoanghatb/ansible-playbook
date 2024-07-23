@@ -4,7 +4,6 @@
   become: yes
   vars:
     oscap_script: /tmp/xccdf_eval_debian.sh.j2
-    oscap_lib: /tmp/ssg-debian12-ds.xml
 
   tasks:
 
@@ -13,13 +12,13 @@
         filter: ansible_distribution
       register: distro_info
 
-    - name: Copy tar.gz file to remote server debian
+    - name: Copy OpenSCAP tar.gz file to remote server debian
       copy:
         src: files/debian/pci-dss.tar.gz
         dest: /tmp/
       when: distro_info.ansible_facts.ansible_distribution == "Debian"
 
-    - name: Copy tar.gz file to remote server CentOS
+    - name: Copy OpenSCAP tar.gz file to remote server CentOS
       copy:
         src: files/centos/pci-dss.tar.gz
         dest: /tmp/
@@ -87,12 +86,11 @@
         dest: "{{ oscap_script }}"
         mode: '0755'
         
-    - name: Deploy xccdf_eval lib to the host
-      ansible.builtin.template:
-        src: templates/xccdf_eval_debian.sh.j2
-        dest: "{{ oscap_lib }}"
-#        mode: '0755'
-
+    - name: Copy lib file to remote server debian
+      copy:
+        src: templates/ssg-debian12-ds.xml
+        dest: /tmp/
+      
     - name: Execute the OpenSCAP evaluation script
       ansible.builtin.command: "{{ oscap_script }}"
       #      shell: /tmp/xccdf_eval.sh
