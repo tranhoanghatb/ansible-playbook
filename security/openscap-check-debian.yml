@@ -4,7 +4,7 @@
   become: yes
   vars:
     oscap_script: /tmp/xccdf_eval_debian.sh.j2
-    oscap_lib: /tmp/pci-dss/ssg-debian12-ds.xml
+    oscap_lib: /tmp/ssg-debian12-ds.xml
 
   tasks:
 
