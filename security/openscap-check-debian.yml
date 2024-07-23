@@ -11,7 +11,12 @@
       ansible.builtin.setup:
         filter: ansible_distribution
       register: distro_info
-
+        
+    - name: Copy lib file to remote server debian
+      copy:
+        src: templates/ssg-debian12-ds.xml
+        dest: /tmp/
+      
     - name: Copy OpenSCAP tar.gz file to remote server debian
       copy:
         src: files/debian/pci-dss.tar.gz
@@ -85,12 +90,7 @@
         src: templates/ssg-debian12-ds.xml
         dest: "{{ oscap_script }}"
         mode: '0755'
-        
-    - name: Copy lib file to remote server debian
-      copy:
-        src: templates/ssg-debian12-ds.xml
-        dest: /tmp/
-      
+
     - name: Execute the OpenSCAP evaluation script
       ansible.builtin.command: "{{ oscap_script }}"
       #      shell: /tmp/xccdf_eval.sh
