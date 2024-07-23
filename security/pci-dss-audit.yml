@@ -4,6 +4,7 @@
   become: yes
   vars:
     oscap_script: /tmp/xccdf_eval_debian.sh.j2
+    oscap_lib: /usr/share/xml/scap/ssg/content/ssg-debian12-ds.xml
 
   tasks:
 
@@ -82,9 +83,15 @@
 
     - name: Deploy xccdf_eval script to the host
       ansible.builtin.template:
-        src: templates/xccdf_eval_debian.sh.j2
+        src: templates/ssg-debian12-ds.xml
         dest: "{{ oscap_script }}"
         mode: '0755'
+        
+    - name: Deploy xccdf_eval lib to the host
+      ansible.builtin.template:
+        src: templates/xccdf_eval_debian.sh.j2
+        dest: "{{ oscap_lib }}"
+#        mode: '0755'
 
     - name: Execute the OpenSCAP evaluation script
       ansible.builtin.command: "{{ oscap_script }}"
