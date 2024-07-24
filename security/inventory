@@ -1,3 +1,6 @@
+[all:vars]
+ansible_user=administrator
+
 [rocky8]
 #rocky-8-demo ansible_user=rocky
 
